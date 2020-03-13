@@ -2,7 +2,7 @@ package httpcollector
 
 import (
 	"encoding/json"
-	"github.com/gliderlabs/registrator/bridge"
+	"github.com/king311247/registrator/bridge"
 	"log"
 	"net/http"
 	//"fmt"

@@ -1,10 +1,10 @@
 package main
 
 import (
-	_ "github.com/gliderlabs/registrator/consul"
-	_ "github.com/gliderlabs/registrator/consulkv"
-	_ "github.com/gliderlabs/registrator/etcd"
-	_ "github.com/gliderlabs/registrator/httpcollector"
-	_ "github.com/gliderlabs/registrator/skydns2"
-	_ "github.com/gliderlabs/registrator/zookeeper"
+	_ "github.com/king311247/registrator/consul"
+	_ "github.com/king311247/registrator/consulkv"
+	_ "github.com/king311247/registrator/etcd"
+	_ "github.com/king311247/registrator/httpcollector"
+	_ "github.com/king311247/registrator/skydns2"
+	_ "github.com/king311247/registrator/zookeeper"
 )
