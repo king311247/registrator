@@ -22,7 +22,7 @@ func init() {
 type Factory struct{}
 
 func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
-	return &HttpcollectorAdapter{client: http.DefaultClient, baseUrl: uri.Host}
+	return &HttpcollectorAdapter{client: http.DefaultClient, baseUrl: "http://" + uri.Host}
 }
 
 type HttpcollectorAdapter struct {
