@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/king311247/registrator/bridge"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/king311247/registrator/bridge"
 )
 
 const DefaultInterval = "10s"
