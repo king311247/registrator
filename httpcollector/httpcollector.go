@@ -20,36 +20,36 @@ func init() {
 type Factory struct{}
 
 func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
-	return &HttpCollectAdapter{client: http.DefaultClient}
+	return &HttpcollectorAdapter{client: http.DefaultClient}
 }
 
-type HttpCollectAdapter struct {
+type HttpcollectorAdapter struct {
 	client *http.Client
 }
 
-func (h HttpCollectAdapter) Ping() error {
+func (h HttpcollectorAdapter) Ping() error {
 	log.Println("httpcollector ping ")
 	return nil
 }
 
-func (h HttpCollectAdapter) Register(service *bridge.Service) error {
+func (h HttpcollectorAdapter) Register(service *bridge.Service) error {
 	data, _ := json.Marshal(service)
 	jsonStr := string(data)
 	log.Println("Register : " + jsonStr)
 	return nil
 }
 
-func (h HttpCollectAdapter) Deregister(service *bridge.Service) error {
+func (h HttpcollectorAdapter) Deregister(service *bridge.Service) error {
 	data, _ := json.Marshal(service)
 	jsonStr := string(data)
 	log.Println("Deregister : " + jsonStr)
 	return nil
 }
 
-func (h HttpCollectAdapter) Refresh(service *bridge.Service) error {
+func (h HttpcollectorAdapter) Refresh(service *bridge.Service) error {
 	return nil
 }
 
-func (h HttpCollectAdapter) Services() ([]*bridge.Service, error) {
+func (h HttpcollectorAdapter) Services() ([]*bridge.Service, error) {
 	return nil, nil
 }
