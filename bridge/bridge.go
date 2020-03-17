@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net"
@@ -104,6 +105,17 @@ func (b *Bridge) Sync(quiet bool) {
 	// NOTE: This assumes reregistering will do the right thing, i.e. nothing..
 	for _, listing := range containers {
 		services := b.services[listing.ID]
+		dd, err := json.Marshal(services)
+
+		log.Printf("range containers log ID " + listing.ID)
+		if err == nil {
+			log.Printf("range containers log " + string(dd))
+		}
+		if services != nil {
+			dd, _ := json.Marshal(services)
+			log.Printf("range containers services " + string(dd))
+		}
+
 		if services == nil {
 			b.add(listing.ID, quiet)
 		} else {
@@ -202,7 +214,7 @@ func (b *Bridge) add(containerId string, quiet bool) {
 
 	// Extract configured host port mappings, relevant when using --net=host
 	for port, _ := range container.Config.ExposedPorts {
-		published := []dockerapi.PortBinding{ {"0.0.0.0", port.Port()}, }
+		published := []dockerapi.PortBinding{{"0.0.0.0", port.Port()}}
 		ports[string(port)] = servicePort(container, port, published)
 	}
 
@@ -309,7 +321,7 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 				service.IP = containerIp
 			}
 			log.Println("using container IP " + service.IP + " from label '" +
-				b.config.UseIpFromLabel  + "'")
+				b.config.UseIpFromLabel + "'")
 		} else {
 			log.Println("Label '" + b.config.UseIpFromLabel +
 				"' not found in container configuration")
