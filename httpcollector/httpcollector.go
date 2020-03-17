@@ -138,9 +138,9 @@ type ApiService struct {
 
 // 服务列表请求响应
 type ApiServicesResponse struct {
-	Code        int
-	Message     string
-	ApiServices []ApiService
+	Code    int
+	Message string
+	Data    []ApiService
 }
 
 func (h HttpcollectorAdapter) Services() ([]*bridge.Service, error) {
@@ -170,10 +170,10 @@ func (h HttpcollectorAdapter) Services() ([]*bridge.Service, error) {
 		return nil, errors.New("服务端返回：" + string(body))
 	}
 
-	out := make([]*bridge.Service, len(apiResponse.ApiServices))
+	out := make([]*bridge.Service, len(apiResponse.Data))
 	i := 0
 
-	for _, v := range apiResponse.ApiServices {
+	for _, v := range apiResponse.Data {
 		s := &bridge.Service{
 			ID:   v.ID,
 			Name: v.Service,
