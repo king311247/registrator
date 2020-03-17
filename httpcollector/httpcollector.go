@@ -48,7 +48,7 @@ func (h HttpcollectorAdapter) Register(service *bridge.Service) error {
 		return err
 	}
 
-	log.Println("Deregister : " + string(postData))
+	log.Println("Register : " + string(postData))
 
 	var url = h.baseUrl + "/api/serviceregister/register"
 	response, err := h.client.Post(url, "application/json", bytes.NewReader(postData))
