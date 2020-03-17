@@ -160,9 +160,6 @@ func (h HttpcollectorAdapter) Services() ([]*bridge.Service, error) {
 		return nil, err
 	}
 
-	// test log
-	log.Printf("response" + string(body))
-
 	apiResponse := new(ApiServicesResponse)
 	err = json.Unmarshal(body, apiResponse)
 	if err != nil {
@@ -175,10 +172,6 @@ func (h HttpcollectorAdapter) Services() ([]*bridge.Service, error) {
 
 	out := make([]*bridge.Service, len(apiResponse.Data))
 	i := 0
-
-	// test log
-	js, _ := json.Marshal(apiResponse.Data)
-	log.Printf("data:" + string(js))
 
 	for _, v := range apiResponse.Data {
 		s := &bridge.Service{

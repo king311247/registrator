@@ -1,7 +1,6 @@
 package bridge
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net"
@@ -105,16 +104,6 @@ func (b *Bridge) Sync(quiet bool) {
 	// NOTE: This assumes reregistering will do the right thing, i.e. nothing..
 	for _, listing := range containers {
 		services := b.services[listing.ID]
-		dd, err := json.Marshal(services)
-
-		log.Printf("range containers log ID " + listing.ID)
-		if err == nil {
-			log.Printf("range containers log " + string(dd))
-		}
-		if services != nil {
-			dd, _ := json.Marshal(services)
-			log.Printf("range containers services " + string(dd))
-		}
 
 		if services == nil {
 			b.add(listing.ID, quiet)
