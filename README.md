@@ -15,6 +15,31 @@ supports pluggable service registries, which currently includes
 
 Full documentation available at http://gliderlabs.com/registrator
 
+##  httpcollector demo
+
+httpcollector will report date to http server.
+
+running Registrator looks like this:
+
+docker run --rm \
+    --net=host \
+    --volume=/var/run/docker.sock:/tmp/docker.sock \
+    registrator:latest -internal=true -cleanup  -resync=30 \
+    httpcollector://ctapigateway.opc.admin.ct108.net:1505
+
+running Registrator on swarm mode looks like this:
+
+docker service create -d \
+--restart-condition on-failure \
+--restart-max-attempts=10 \
+--restart-delay=15s \
+--name registrator_http \
+--constraint "node.role==worker" \
+--mode=global --network=host \
+--mount type=bind,source=/var/run/docker.sock,destination=/tmp/docker.sock  \
+registrator:latest -internal=true -resync=30 -cleanup  httpcollector://ctapigateway.opc.admin.ct108.net:1505
+
+
 ## Getting Registrator
 
 Get the latest release, master, or any version of Registrator via [Docker Hub](https://registry.hub.docker.com/u/gliderlabs/registrator/):
