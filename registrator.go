@@ -113,7 +113,6 @@ func main() {
 		DeregisterCheck: *deregister,
 		Cleanup:         *cleanup,
 	})
-
 	assert(err)
 
 	attempt := 0

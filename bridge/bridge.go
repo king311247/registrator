@@ -2,6 +2,8 @@ package bridge
 
 import (
 	"errors"
+	"fmt"
+	"k8s.io/apimachinery/pkg/util/json"
 	"log"
 	"net"
 	"net/url"
@@ -24,6 +26,13 @@ type Bridge struct {
 	services       map[string][]*Service
 	deadContainers map[string]*DeadContainer
 	config         Config
+}
+
+type K8SContainerPort struct {
+	Name          string `json:"name"`
+	ContainerPort int    `json:"containerPort"`
+	HostPort      int    `json:"hostPort"`
+	Protocol      string `json:"protocol"`
 }
 
 func New(docker *dockerapi.Client, adapterUri string, config Config) (*Bridge, error) {
@@ -201,15 +210,20 @@ func (b *Bridge) add(containerId string, quiet bool) {
 
 	ports := make(map[string]ServicePort)
 
-	// Extract configured host port mappings, relevant when using --net=host
-	for port, _ := range container.Config.ExposedPorts {
-		published := []dockerapi.PortBinding{{"0.0.0.0", port.Port()}}
-		ports[string(port)] = servicePort(container, port, published)
-	}
+	if isK8SScheduleContainer(container) {
+		// 获取k8s调度的容器ports
+		b.extractK8SSchedulePorts(container, ports)
+	} else {
+		// Extract configured host port mappings, relevant when using --net=host
+		for port, _ := range container.Config.ExposedPorts {
+			published := []dockerapi.PortBinding{{"0.0.0.0", port.Port()}}
+			ports[string(port)] = servicePort(container, port, published)
+		}
 
-	// Extract runtime port mappings, relevant when using --net=bridge
-	for port, published := range container.NetworkSettings.Ports {
-		ports[string(port)] = servicePort(container, port, published)
+		// Extract runtime port mappings, relevant when using --net=bridge
+		for port, published := range container.NetworkSettings.Ports {
+			ports[string(port)] = servicePort(container, port, published)
+		}
 	}
 
 	if len(ports) == 0 && !quiet {
@@ -237,6 +251,9 @@ func (b *Bridge) add(containerId string, quiet bool) {
 			}
 			continue
 		}
+		json2, _ := json.Marshal(service)
+		log.Println("register service:", string(json2))
+
 		err := b.registry.Register(service)
 		if err != nil {
 			log.Println("register failed:", service, err)
@@ -244,6 +261,74 @@ func (b *Bridge) add(containerId string, quiet bool) {
 		}
 		b.services[container.ID] = append(b.services[container.ID], service)
 		log.Println("added:", container.ID[:12], service.ID)
+	}
+}
+
+// 是否K8S调度的容器
+func isK8SScheduleContainer(container *dockerapi.Container) bool {
+	podId := container.Config.Labels["io.kubernetes.pod.uid"]
+	if podId == "" {
+		return false
+	}
+	return true
+}
+
+// 通过kubernetes 部署时,容器没有暴露端口，通过Labels解析获取端口号
+func (b *Bridge) extractK8SSchedulePorts(container *dockerapi.Container, ports map[string]ServicePort) {
+	podId := container.Config.Labels["io.kubernetes.pod.uid"]
+	podName := container.Config.Labels["io.kubernetes.pod.name"]
+	podNamespace := container.Config.Labels["io.kubernetes.pod.namespace"]
+	portsJsonData := container.Config.Labels["annotation.io.kubernetes.container.ports"]
+	dockerType := container.Config.Labels["io.kubernetes.docker.type"]
+
+	if len(podId) <= 0 || len(podName) <= 0 || len(podNamespace) <= 0 || len(portsJsonData) <= 0 {
+		return
+	}
+
+	isIgnore := false
+	serviceName := ""
+	podIp := ""
+	for _, kv := range container.Config.Env {
+		kvp := strings.SplitN(kv, "=", 2)
+		if len(kvp) <= 1 {
+			continue
+		}
+		if strings.HasPrefix(kvp[0], "SERVICE_IGNORE") {
+			isIgnore = strings.ToLower(kvp[1]) == "true"
+		}
+
+		if strings.HasPrefix(kvp[0], "SERVICE_NAME") {
+			serviceName = kvp[1]
+		}
+
+		if strings.HasPrefix(kvp[0], "K8S_POD_IP") {
+			podIp = kvp[1]
+		}
+	}
+
+	if isIgnore || serviceName == "" || dockerType != "container" {
+		return
+	}
+
+	var k8sPorts []K8SContainerPort
+	err := json.Unmarshal([]byte(portsJsonData), &k8sPorts)
+	if err != nil {
+		fmt.Println("K8SContainerPort json.Unmarshal:", err)
+		return
+	}
+
+	if podIp == "" {
+		fmt.Println("Pod IP from env is empty")
+		return
+	}
+
+	log.Println("extractK8SSchedulePorts: ", container.ID+":"+container.Name, portsJsonData)
+	for _, k8sPort := range k8sPorts {
+		port := dockerapi.Port(strconv.Itoa(k8sPort.ContainerPort) + "/" + strings.ToLower(k8sPort.Protocol))
+
+		log.Println("k8sPort: ", container.ID, container.Name, k8sPort.ContainerPort, k8sPort.Protocol, port)
+		servicePort := servicePortK8S(container, port, podIp)
+		ports[string(port)] = servicePort
 	}
 }
 
@@ -319,7 +404,7 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 
 	// NetworkMode can point to another container (kuberenetes pods)
 	networkMode := container.HostConfig.NetworkMode
-	if networkMode != "" {
+	if port.ExposedIP == "" && networkMode != "" {
 		if strings.HasPrefix(networkMode, "container:") {
 			networkContainerId := strings.Split(networkMode, ":")[1]
 			log.Println(service.Name + ": detected container NetworkMode, linked to: " + networkContainerId[:12])
