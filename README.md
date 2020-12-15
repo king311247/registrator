@@ -25,7 +25,7 @@ docker run --rm \
     --net=host \
     --volume=/var/run/docker.sock:/tmp/docker.sock \
     registrator:latest -internal=true -cleanup  -resync=30 \
-    httpcollector://ctapigateway.opc.admin.ct108.net:1505
+    httpcollector://xx.com:1505
 
 running Registrator on swarm mode looks like this:
 
@@ -37,7 +37,7 @@ docker service create -d \
 --constraint "node.role==worker" \
 --mode=global --network=host \
 --mount type=bind,source=/var/run/docker.sock,destination=/tmp/docker.sock  \
-registrator:latest -internal=true -resync=30 -cleanup  httpcollector://ctapigateway.opc.admin.ct108.net:1505
+registrator:latest -internal=true -resync=30 -cleanup  httpcollector://xx.com:1505
 
 
 ## Getting Registrator
