@@ -26,6 +26,7 @@ type Bridge struct {
 	services       map[string][]*Service
 	deadContainers map[string]*DeadContainer
 	config         Config
+	agentId        string
 }
 
 type K8SContainerPort struct {
@@ -56,7 +57,17 @@ func New(docker *dockerapi.Client, adapterUri string, config Config) (*Bridge, e
 }
 
 func (b *Bridge) Ping() error {
-	return b.registry.Ping()
+	err := b.registry.Ping()
+	if err != nil {
+		return err
+	}
+	agentId, err := b.registry.RegisterAgentNode(b.config.DataCenterId, b.config.HostIp)
+	if err != nil {
+		return err
+	}
+	b.agentId = agentId
+
+	return nil
 }
 
 func (b *Bridge) Add(containerId string) {
@@ -153,7 +164,7 @@ func (b *Bridge) Sync(quiet bool) {
 		}
 
 		log.Println("Cleaning up dangling services")
-		extServices, err := b.registry.Services()
+		extServices, err := b.registry.Services(b.agentId)
 		if err != nil {
 			log.Println("cleanup failed:", err)
 			return
@@ -353,6 +364,7 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 	}
 
 	metadata, metadataFromPort := serviceMetaData(container.Config, port.ExposedPort)
+	metadata["agentId"] = b.agentId
 
 	ignore := mapDefault(metadata, "ignore", "")
 	if ignore != "" {

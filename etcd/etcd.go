@@ -51,6 +51,10 @@ type EtcdAdapter struct {
 	path string
 }
 
+func (r *EtcdAdapter) RegisterAgentNode(dataCenterId string, hostIp string) (string, error) {
+	return "", nil
+}
+
 func (r *EtcdAdapter) Ping() error {
 	r.syncEtcdCluster()
 
@@ -124,6 +128,6 @@ func (r *EtcdAdapter) Refresh(service *bridge.Service) error {
 	return r.Register(service)
 }
 
-func (r *EtcdAdapter) Services() ([]*bridge.Service, error) {
+func (r *EtcdAdapter) Services(agentId string) ([]*bridge.Service, error) {
 	return []*bridge.Service{}, nil
 }

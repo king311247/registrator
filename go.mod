@@ -15,6 +15,7 @@ require (
 	github.com/docker/go-units v0.3.3 // indirect
 	github.com/fsouza/go-dockerclient v1.2.0
 	github.com/gliderlabs/pkg v0.0.0-20161206023812-36f28d47ec7a
+	github.com/google/btree v1.0.0 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/hashicorp/consul v1.0.7
 	github.com/hashicorp/go-cleanhttp v0.5.0
@@ -33,7 +34,5 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/coreos/go-etcd.v0 v0.4.6
 	gotest.tools v2.2.0+incompatible // indirect
-	k8s.io/api v0.19.0
 	k8s.io/apimachinery v0.19.0
-	k8s.io/client-go v0.19.0
 )

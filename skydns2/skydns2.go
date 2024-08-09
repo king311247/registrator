@@ -34,6 +34,10 @@ type Skydns2Adapter struct {
 	path   string
 }
 
+func (r *Skydns2Adapter) RegisterAgentNode(dataCenterId string, hostIp string) (string, error) {
+	return "", nil
+}
+
 func (r *Skydns2Adapter) Ping() error {
 	rr := etcd.NewRawRequest("GET", "version", nil, nil)
 	_, err := r.client.SendRequest(rr)
@@ -65,7 +69,7 @@ func (r *Skydns2Adapter) Refresh(service *bridge.Service) error {
 	return r.Register(service)
 }
 
-func (r *Skydns2Adapter) Services() ([]*bridge.Service, error) {
+func (r *Skydns2Adapter) Services(agentId string) ([]*bridge.Service, error) {
 	return []*bridge.Service{}, nil
 }
 

@@ -65,6 +65,10 @@ type ConsulAdapter struct {
 	client *consulapi.Client
 }
 
+func (r *ConsulAdapter) RegisterAgentNode(dataCenterId string, hostIp string) (string, error) {
+	return "", nil
+}
+
 // Ping will try to connect to consul by attempting to retrieve the current leader.
 func (r *ConsulAdapter) Ping() error {
 	status := r.client.Status()
@@ -156,7 +160,7 @@ func (r *ConsulAdapter) Refresh(service *bridge.Service) error {
 	return nil
 }
 
-func (r *ConsulAdapter) Services() ([]*bridge.Service, error) {
+func (r *ConsulAdapter) Services(agentId string) ([]*bridge.Service, error) {
 	services, err := r.client.Agent().Services()
 	if err != nil {
 		return []*bridge.Service{}, err

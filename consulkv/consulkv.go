@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/king311247/registrator/bridge"
 	consulapi "github.com/hashicorp/consul/api"
+	"github.com/king311247/registrator/bridge"
 )
 
 func init() {
@@ -38,6 +38,10 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 type ConsulKVAdapter struct {
 	client *consulapi.Client
 	path   string
+}
+
+func (r *ConsulKVAdapter) RegisterAgentNode(dataCenterId string, hostIp string) (string, error) {
+	return "", nil
 }
 
 // Ping will try to connect to consul by attempting to retrieve the current leader.
@@ -78,6 +82,6 @@ func (r *ConsulKVAdapter) Refresh(service *bridge.Service) error {
 	return nil
 }
 
-func (r *ConsulKVAdapter) Services() ([]*bridge.Service, error) {
+func (r *ConsulKVAdapter) Services(agentId string) ([]*bridge.Service, error) {
 	return []*bridge.Service{}, nil
 }

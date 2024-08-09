@@ -3,6 +3,7 @@ WORKDIR /go/src/github.com/king311247/registrator/
 COPY . .
 
 RUN apk add --no-cache curl git \
+    && echo '199.232.28.133 raw.githubusercontent.com'>/etc/hosts \
     && curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 RUN export CGO_ENABLED=0 \
